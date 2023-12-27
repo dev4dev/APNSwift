@@ -179,14 +179,19 @@ extension APNSClient {
 
         // Device token
         let requestURL = "\(self.configuration.environment.absoluteURL)/\(request.deviceToken)"
-        var byteBuffer = self.byteBufferAllocator.buffer(capacity: 0)
+        let requestBody: HTTPClientRequest.Body
+        if let raw = request.message as? String, let data = raw.data(using: .utf8) {
+            requestBody = .bytes(data, length: .known(data.count))
+        } else {
+            var byteBuffer = self.byteBufferAllocator.buffer(capacity: 0)
+            try self.requestEncoder.encode(request.message, into: &byteBuffer)
+            requestBody = .bytes(byteBuffer)
+        }
 
-        try self.requestEncoder.encode(request.message, into: &byteBuffer)
-        
         var httpClientRequest = HTTPClientRequest(url: requestURL)
         httpClientRequest.method = .POST
         httpClientRequest.headers = headers
-        httpClientRequest.body = .bytes(byteBuffer)
+        httpClientRequest.body = requestBody
 
         let response = try await self.httpClient.execute(httpClientRequest, deadline: .distantFuture)
 

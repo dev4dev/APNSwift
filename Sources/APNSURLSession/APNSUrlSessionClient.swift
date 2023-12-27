@@ -32,8 +32,12 @@ public struct APNSURLSessionClient: APNSClientProtocol {
         await urlRequest.setValue(try configuration.nextValidToken(), forHTTPHeaderField: "Authorization")
         
         /// Set Body
-        urlRequest.httpBody = try encoder.encode(request.message)
-    
+        if let raw = request.message as? String {
+            urlRequest.httpBody = raw.data(using: .utf8)
+        } else {
+            urlRequest.httpBody = try encoder.encode(request.message)
+        }
+
         /// Make request
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         
