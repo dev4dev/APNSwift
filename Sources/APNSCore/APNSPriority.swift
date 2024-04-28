@@ -25,4 +25,8 @@ public struct APNSPriority: Hashable, Encodable, Sendable {
     
     /// Specify 1 to prioritize the device’s power considerations over all other factors for delivery, and prevent awakening the device.
     public static let low = Self(rawValue: 1)
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
 }
