@@ -56,6 +56,8 @@ public final class APNSClient<Decoder: APNSJSONDecoder, Encoder: APNSJSONEncoder
         return headers
     }()
 
+    private let logger: (any APNSClientLogger)?
+
     /// Initializes a new APNS.
     ///
     /// The client will create an internal ``HTTPClient`` which is used to make requests to APNs.
@@ -74,12 +76,14 @@ public final class APNSClient<Decoder: APNSJSONDecoder, Encoder: APNSJSONEncoder
         eventLoopGroupProvider: NIOEventLoopGroupProvider,
         responseDecoder: Decoder,
         requestEncoder: Encoder,
-        byteBufferAllocator: ByteBufferAllocator = .init()
+        byteBufferAllocator: ByteBufferAllocator = .init(),
+        logger: (any APNSClientLogger)? = nil
     ) {
         self.configuration = configuration
         self.byteBufferAllocator = byteBufferAllocator
         self.responseDecoder = responseDecoder
         self.requestEncoder = requestEncoder
+        self.logger = logger
 
         var tlsConfiguration = TLSConfiguration.makeClientConfiguration()
         switch configuration.authenticationMethod.method {
@@ -195,6 +199,8 @@ extension APNSClient {
 
         let response = try await self.httpClient.execute(httpClientRequest, deadline: .distantFuture)
 
+        logger?.logTransaction(request: httpClientRequest, response: response)
+
         let apnsID = response.headers.first(name: "apns-id").flatMap { UUID(uuidString: $0) }
 
         if response.status == .ok {
@@ -208,6 +214,7 @@ extension APNSClient {
             responseStatus: Int(response.status.code),
             apnsID: apnsID,
             apnsResponse: errorResponse,
+            rawBody: .init(buffer: body),
             timestamp: errorResponse.timestampInSeconds.flatMap { Date(timeIntervalSince1970: $0) }
         )
 

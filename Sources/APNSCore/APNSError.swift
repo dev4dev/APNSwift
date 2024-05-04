@@ -397,6 +397,8 @@ public struct APNSError: Error {
     /// The error code indicating the reason for the failure.
     public let reason: ErrorReason?
 
+    public let rawBody: String?
+
     /// The date at which APNs confirmed the token was no longer valid for the topic.
     ///
     /// This is only set when the error reason is `unregistered`.
@@ -406,6 +408,7 @@ public struct APNSError: Error {
         responseStatus: Int,
         apnsID: UUID? = nil,
         apnsResponse: APNSErrorResponse? = nil,
+        rawBody: String? = nil,
         timestamp: Date? = nil
     ) {
         self.responseStatus = responseStatus
@@ -415,7 +418,8 @@ public struct APNSError: Error {
         } else {
             self.reason = nil
         }
-        
+        self.rawBody = rawBody
+
         self.timestamp = timestamp
     }
 }
