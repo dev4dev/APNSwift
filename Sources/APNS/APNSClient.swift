@@ -170,7 +170,7 @@ extension APNSClient {
         let requestURL = "\(self.configuration.environment.absoluteURL)/\(request.deviceToken)"
         let requestBody: HTTPClientRequest.Body
         if let raw = request.message as? String, let data = raw.data(using: .utf8) {
-            requestBody = .bytes(data, length: .known(data.count))
+            requestBody = .bytes(data, length: .known(Int64(data.count)))
         } else {
             var byteBuffer = self.byteBufferAllocator.buffer(capacity: 0)
             try self.requestEncoder.encode(request.message, into: &byteBuffer)
