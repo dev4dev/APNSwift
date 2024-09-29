@@ -12,14 +12,19 @@
 //
 //===----------------------------------------------------------------------===//
 
-public struct APNSLiveActivityNotificationEvent: Hashable, Sendable {
-    /// The underlying raw value that is send to APNs.
-    @usableFromInline
-    internal let rawValue: String
+import APNSCore
+import XCTest
 
-    /// Specifies that live activity should be updated
-    public static let update = Self(rawValue: "update")
+final class APNSPushToTalkNotificationTests: XCTestCase {
+    func testAppID() {
+        struct Payload: Encodable {
+            let foo = "bar"
+        }
+        let voipNotification = APNSPushToTalkNotification(
+            appID: "com.example.app",
+            payload: Payload()
+        )
 
-    /// Specifies that live activity should be ended
-    public static let end = Self(rawValue: "end")
+        XCTAssertEqual(voipNotification.topic, "com.example.app.voip-ptt")
+    }
 }

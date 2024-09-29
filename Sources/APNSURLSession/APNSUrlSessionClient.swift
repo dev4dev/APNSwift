@@ -7,6 +7,7 @@ enum APNSUrlSessionClientError: Error {
 }
 
 public struct APNSURLSessionClient: APNSClientProtocol {
+    
     private let configuration: APNSURLSessionClientConfiguration
     
     let encoder = JSONEncoder()
@@ -48,20 +49,26 @@ public struct APNSURLSessionClient: APNSClientProtocol {
         }
         
         let apnsID = UUID(uuidString: apnsIDString)
+        let apnsUniqueID = (response.allHeaderFields["apns-unique-id"] as? String).flatMap { UUID(uuidString: $0) }
         
         /// Detect an error
         if let errorResponse = try? decoder.decode(APNSErrorResponse.self, from: data) {
             let error = APNSError(
                 responseStatus: response.statusCode,
                 apnsID: apnsID,
+                apnsUniqueID: apnsUniqueID,
                 apnsResponse: errorResponse,
                 timestamp: errorResponse.timestampInSeconds.flatMap { Date(timeIntervalSince1970: $0) }
             )
             throw error
         } else {
             /// Return APNSResponse
-            return APNSResponse(apnsID: apnsID)
+            return APNSResponse(apnsID: apnsID, apnsUniqueID: apnsUniqueID)
         }
+    }
+
+    public func shutdown() async throws {
+        // no op
     }
 }
 

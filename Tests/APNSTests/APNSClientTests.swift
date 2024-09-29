@@ -18,9 +18,9 @@ import Crypto
 import XCTest
 
 final class APNSClientTests: XCTestCase {
-    func testShutdown() throws {
+    func testShutdown() async throws {
         let client = self.makeClient()
-        try client.syncShutdown()
+        try await client.shutdown()
     }
 
     // MARK: - Helper methods
@@ -33,7 +33,7 @@ final class APNSClientTests: XCTestCase {
                     keyIdentifier: "MY_KEY_ID",
                     teamIdentifier: "MY_TEAM_ID"
                 ),
-                environment: .sandbox
+                environment: .development
             ),
             eventLoopGroupProvider: .createNew,
             responseDecoder: JSONDecoder(),
